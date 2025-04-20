@@ -14,7 +14,7 @@ OBJS      = ${OBJDIR}/iszero.cpp.o \
 
 all: pre example
 
-example: ${OBJS}
+example: ${OBJS} example.cpp
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} ${OBJS} example.cpp -o example ${LDFLAGS}
 
 ${OBJS}: ${OBJDIR}/%.cpp.o: ${SRCDIR}/%.cpp
