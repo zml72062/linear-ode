@@ -9,6 +9,7 @@ LDFLAGS   = -lcln -lginac -lflint
 
 OBJS      = ${OBJDIR}/iszero.cpp.o \
 			${OBJDIR}/interface.cpp.o \
+			${OBJDIR}/base.cpp.o \
 			${OBJDIR}/diffeq.cpp.o \
 			${OBJDIR}/solver.cpp.o
 
