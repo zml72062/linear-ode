@@ -70,8 +70,8 @@ moser_t base_diffeq::get_moser_struct(const GiNaC::ex& x0) {
     
     for (int i = 0; i < N(); i++) {
         for (int j = 0; j < N(); j++) {
-            info.A0(i, j) = coeff_(i, j).coeff(t, -info.negative_power);
-            info.A1(i, j) = coeff_(i, j).coeff(t, -info.negative_power + 1);
+            info.A0(i, j) = coeff_(i, j).coeff(t, -info.negative_power).normal();
+            info.A1(i, j) = coeff_(i, j).coeff(t, -info.negative_power + 1).normal();
         }
     }
     return info;
@@ -106,7 +106,7 @@ void base_diffeq::moser_reduction_one_step(const GiNaC::ex& x0) {
             permutation(i, m2++) = 1;
     }
     
-    auto newA0 = moser_info.A0.mul(permutation);
+    auto newA0 = NORMAL(moser_info.A0.mul(permutation));
     auto newA0_coeff = SUBMATRIX(newA0, 0, N(), 0, r);
     auto newA0_bias  = SUBMATRIX(newA0, 0, N(), r, N() - r);
     GiNaC::matrix vars(r, N() - r);
@@ -115,7 +115,7 @@ void base_diffeq::moser_reduction_one_step(const GiNaC::ex& x0) {
             vars(i, j) = GiNaC::symbol("temp_" + std::to_string(i) + "_" + std::to_string(j));
     // there must exist a unique solution, since 
     // rank(newA0_coeff) = rank(newA0_coeff, newA0_bias) = r
-    auto combini = newA0_coeff.solve(vars, newA0_bias);
+    auto combini = NORMAL(newA0_coeff.solve(vars, newA0_bias));
 
     GiNaC::matrix lincomb(N(), N());
     for (int i = 0; i < N(); i++)
@@ -124,7 +124,7 @@ void base_diffeq::moser_reduction_one_step(const GiNaC::ex& x0) {
         for (int j = r; j < N(); j++)
             lincomb(i, j) = -combini(i, j - r);
 
-    auto new_transform = permutation.mul(lincomb);
+    auto new_transform = NORMAL(permutation.mul(lincomb));
     update(new_transform);
 
     // step 2: decide Moser reducibility
@@ -143,7 +143,7 @@ void base_diffeq::moser_reduction_one_step(const GiNaC::ex& x0) {
     for (int i = r; i < N(); i++)
         moser_discriminant(i, i) += lambda; 
 
-    if (!bool(moser_discriminant.determinant().expand() == 0))
+    if (!bool(moser_discriminant.determinant().expand().normal() == 0))
         // not Moser reducible
         return;
     
@@ -189,14 +189,14 @@ void base_diffeq::moser_reduction_one_step(const GiNaC::ex& x0) {
             inv_permutation(r + (n2++), r + i) = 1;
     }
 
-    auto newD = inv_permutation.mul(moser_discriminant);
+    auto newD = NORMAL(inv_permutation.mul(moser_discriminant));
     auto newD_coeff = SUBMATRIX(newD, r, N() - r - h, 0, N()).transpose();
     auto newD_bias  = SUBMATRIX(newD, N() - h, h, 0, N()).transpose();
     GiNaC::matrix varsD(N() - r - h, h);
     for (int i = 0; i < N() - r - h; i++)
         for (int j = 0; j < h; j++)
             varsD(i, j) = GiNaC::symbol("tempD_" + std::to_string(i) + "_" + std::to_string(j)); 
-    auto combiniD = newD_coeff.solve(varsD, newD_bias);
+    auto combiniD = NORMAL(newD_coeff.solve(varsD, newD_bias));
     GiNaC::matrix lincombD(N(), N());
     for (int i = 0; i < N(); i++)
         lincombD(i, i) = 1;
