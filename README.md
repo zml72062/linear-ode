@@ -4,11 +4,11 @@ This repository implements an algorithm presented by Moulay Barkatou ([link](htt
 
 ## Dependencies
 
-The program uses `ginac` as its user interface, while exploits `flint` to perform efficient computations. One must have libraries `flint` and `ginac` installed on the computer.
+The program uses `ginac` as its frontend, while exploits either `flint` or `ginac` as its backend. One must have libraries `flint` and `ginac` installed on the computer.
 
 ## Usage
 
-Run `make` to build the program. Please check `example.cpp` to see example usage. 
+Run `make` to build the program. Please check `example.cpp` and `symexample.cpp` to see example usage. 
 
 ## Introduction
 
@@ -37,5 +37,10 @@ When one tries to use the recurrence relation to determine $Y_k^{(p)}$ for $k>0$
 
 ## About the program
 
-From the introduction, one already sees that computing Jordan decomposition is a necessary step when trying to solve an equation around its regular singularities. However, Jordan decomposition is known to be numerically unstable. Therefore, our program prefers performing Jordan decompositions symbolically. This is always possible when the leading coefficient matrix $A_0$ has rational eigenvalues only, and in this case our program will output series solutions with all-rational coefficients. Otherwise, when the eigenvalue of $A_0$ is irrational, the corresponding solution will have numerical coefficients. In the latter case, the solution is prone to numerical errors, and the program may even fail to give a solution (when there are highly degenerate roots from a high-degree characteristic polynomial).
+From the introduction, one already sees that computing Jordan decomposition is a necessary step when trying to solve an equation around its regular singularities. However, Jordan decomposition is known to be numerically unstable. Therefore, our program prefers performing Jordan decompositions symbolically. 
+
+Actually, we provide two implementations of the solver. The main difference between the two implementations is in how they do Jordan decompositions. One version uses library functions provided by `flint` to do Jordan decomposition. Those library functions are faster, and are guaranteed to give accurate symbolic results when the leading coefficient matrix $A_0$ has rational eigenvalues only. In this case, this implementation will output series solutions with all-rational coefficients. Otherwise, when at least one eigenvalue of $A_0$ is irrational, the corresponding solution will have numerical coefficients. In the latter case, the solution is prone to numerical errors, and the program may even fail to give a solution (when there are highly degenerate roots from a high-degree characteristic polynomial).
+
+Another implementation is purely based on `ginac` to do Jordan decomposition. This has the advantage of always producing accurate symbolic results, and being able to generalize to cases in which the differential equation relies on an additional parameter. However, since it is generally impossible to solve polynomial equations symbolically, this implementation does not guarantee to return a result successfully. Specifically speaking, it will fail and throw an error when at least one eigenvalue of $A_0$ cannot be expressed as a rational function with rational coefficients. Furthermore, computation would be slower compared with the `flint` version.
+
 

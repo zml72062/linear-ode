@@ -84,7 +84,7 @@ static int vector_in_difference(const GiNaC::matrix& V, const GiNaC::matrix& W) 
     int n = W.cols(), found = -1;
     unsigned r = W.rank();
 
-    for (int i = 0; i < V.rows(); i++) {
+    for (int i = 0; i < (int)V.rows(); i++) {
         if (append_row(W, SUBMATRIX(V, i, 1, 0, n)).rank() > r) {
             found = i;
             break;
