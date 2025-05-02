@@ -392,7 +392,9 @@ std::pair<GiNaC::matrix, GiNaC::ex> diffeq::solve(const GiNaC::ex& x0, unsigned 
             auto numer_denom = coeff_(i, j).numer_denom();
             auto numer = numer_denom[0], denom = numer_denom[1];  
             auto ldeg = denom.ldegree(t);
-            A_ana(i, j) = (GiNaC::quo((numer - GiNaC::series_to_poly(coeff_(i, j).series(t, 0)) * denom).expand(), GiNaC::pow(t, ldeg), t, false) / GiNaC::quo(denom, GiNaC::pow(t, ldeg), t, false)).normal();
+            auto pre_expansion = GiNaC::series_to_poly(coeff_(i, j).series(t, 0));
+            pre_expansion = pre_expansion - pre_expansion.coeff(t, 0);
+            A_ana(i, j) = (GiNaC::quo((numer - pre_expansion * denom).expand(), GiNaC::pow(t, ldeg), t, false) / GiNaC::quo(denom, GiNaC::pow(t, ldeg), t, false)).normal();
         }
     }
     

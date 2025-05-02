@@ -250,7 +250,9 @@ std::pair<GiNaC::matrix, GiNaC::lst> symdiffeq::solve(const GiNaC::ex& x0, unsig
     for (int i = 0; i < N(); i++) {
         for (int j = 0; j < N(); j++) {
             coeff_(i, j) = coeff(i, j).subs(x == x0 + t, GiNaC::subs_options::algebraic).normal();
-            A_ana(i, j) = (coeff_(i, j) - GiNaC::series_to_poly(coeff_(i, j).series(t, 0))).normal();
+            auto pre_expansion = GiNaC::series_to_poly(coeff_(i, j).series(t, 0));
+            pre_expansion = pre_expansion - pre_expansion.coeff(t, 0);
+            A_ana(i, j) = (coeff_(i, j) - pre_expansion).normal();
         }
     }
     
