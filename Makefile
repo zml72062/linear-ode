@@ -14,7 +14,8 @@ OBJS      = ${OBJDIR}/iszero.cpp.o \
 			${OBJDIR}/solver.cpp.o \
 			${OBJDIR}/jordan.cpp.o \
 			${OBJDIR}/symdiffeq.cpp.o \
-			${OBJDIR}/symsolver.cpp.o
+			${OBJDIR}/symsolver.cpp.o \
+			${OBJDIR}/ratsolver.cpp.o
 
 all: pre example symexample
 

@@ -21,11 +21,11 @@ $$Y_{k+1}=\frac{1}{k+1}\left(\sum_{j=0}^kA_{k-j}Y_j\right)$$
 Now $Y_0$ is the arbitrary constant to be determined by initial condition at $x=x_0$.
 
 If $x_0$ is a regular singularity, one may show that a complete set of linearly independent solutions can be found by considering solutions of the form
-$$Y(x)=x^\lambda \sum_{p=0}^{t-1}\frac{\log^px}{p!}\sum_{k=0}^\infty Y_k^{(p)}x^k$$
+$$Y(x)=(x-x_0)^\lambda \sum_{p=0}^{t-1}\frac{\log^p(x-x_0)}{p!}\sum_{k=0}^\infty Y_k^{(p)}(x-x_0)^k$$
 where $\lambda\in\mathbb{C}$ is a complex constant and $t$ is a finite positive integer. 
 
 However, determining $Y_k^{(p)}$ directly is usually hard. An effective process to tackle regular singularities is stated by Moulay Barkatou ([link](https://www.impan.pl/~slawek/pisa/Barkatou_p.pdf)). It is divided into three stages. The first stage is to apply a reduction procedure (known to be explored by Moser) to reduce the pole order of $A(x)$ at $x=x_0$ to one. After the reduction one may write
-$$A(x)=\frac{1}{x}\sum_{k=0}^\infty A_kx^k$$
+$$A(x)=\frac{1}{x-x_0}\sum_{k=0}^\infty A_k(x-x_0)^k$$
 and the recurrence relation for $Y_k^{(p)}$ goes as
 $$[(\lambda+k)I-A_0]Y_k^{(p)}+Y_k^{(p+1)}1[p\ne t-1]=\sum_{l=0}^{k-1}A_{k-l}Y_l^{(p)}$$
 When $k=0$, the above equation reduces to
@@ -34,6 +34,18 @@ and $$(\lambda I-A_0)Y_0^{(p)}=-Y_0^{(p+1)}$$
 for each $p=0,1,\ldots, t-2$. Now it is clear that the allowed values for $\lambda$ must be eigenvalues of $A_0$, and the leading vectors $Y_0^{(p)}$ are decided by the generalized eigenvectors (a.k.a. Jordan chains) corresponding to $\lambda$.
 
 When one tries to use the recurrence relation to determine $Y_k^{(p)}$ for $k>0$, another problem may occur: the matrix $(\lambda+k)I-A_0$ can be singular for a nonzero $k$, if $\lambda+k$ is also an eigenvalue of $A_0$. To deal with this problematic case, we need to add an additional stage before solving the recurrence relation, in which we reduce $A(x)$ further to make $A_0$ have no eigenvalues that differ from one another by nonzero integers. After that, the coeffcient vectors can be safely determined.
+
+If the coefficient matrix $A(x)$ is a matrix of rational functions, i.e., $A(x)=N(x)/D(x)$ where $D(x)$ is a polynomial and $N(x)$ is a matrix of polynomials, we can optimize the solving procedure by rewriting the differential equation as $D(x)\frac{dY}{dx}=N(x)Y(x)$. For the case where $x_0$ is an analytic point of $A(x)$, we can expand
+$$D(x)=\sum_{k=0}^{L_D} D_k(x-x_0)^k$$
+and
+$$N(x)=\sum_{k=0}^{L_N} N_k(x-x_0)^k$$
+where we may always assume $D_0\ne 0$. Then we have the following recurrence relation for $Y_k$,
+$$Y_{k+1}=\frac{1}{(k+1)D_0}\left(\sum_{j=0}^{\min\{k,L_N\}}N_jY_{k-j}-\sum_{j=1}^{\min\{k,L_D\}}(k-j+1)D_jY_{k-j+1}\right)$$
+For the case where $x_0$ is a regular singularity, we can alternatively let
+$$N(x)=\frac{1}{x-x_0}\sum_{k=0}^{L_N}N_k(x-x_0)^k$$
+and then it is easy to derive the recurrence relation for $Y_k$,
+$$[(\lambda+k)D_0I-N_0]Y_k^{(p)}+D_01[p\ne t-1]Y_k^{(p+1)}$$
+$$=\sum_{j=1}^{\min\{k,L_N\}}N_jY_{k-j}^{(p)}-\sum_{j=1}^{\min\{k,L_D\}}D_j[(\lambda+k-j)Y_{k-j}^{(p)}+1[p\ne t-1]Y_{k-j}^{(p+1)}]$$
 
 ## About the program
 

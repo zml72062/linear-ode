@@ -68,6 +68,8 @@ public:
      * @param x0 point of evaluation, assumed to be an analytic point or
      * a regular singular point of the equation
      * @param order series expansion order
+     * @param opt whether to use an algorithm optimized for rational coefficient
+     * matrices (default `true`)
      * 
      * @returns a pair consisting of
      *      (a) a square matrix having the same shape as A(x, eps), each 
@@ -78,7 +80,7 @@ public:
      * @throws throws "not implemented error", if x0 is neither an analytic 
      * point nor a regular singular point (a.k.a. an irregular singular point)
      */
-    std::pair<GiNaC::matrix, GiNaC::lst> solve(const GiNaC::ex& x0, unsigned order);
+    std::pair<GiNaC::matrix, GiNaC::lst> solve(const GiNaC::ex& x0, unsigned order, bool opt = true);
 
     /**
      * Give the special solution to the differential equation
@@ -90,6 +92,8 @@ public:
      * equation
      * @param Y0 the initial value Y(x0, eps)
      * @param order series expansion order
+     * @param opt whether to use an algorithm optimized for rational coefficient
+     * matrices (default `true`)
      * 
      * @returns a pair consisting of 
      *      (a) a matrix having the same shape as Y0, representing the special
@@ -100,7 +104,7 @@ public:
      * @throws throws "not implemented error", if x0 is not an analytic point
      * (a.k.a. a singularity)
      */
-    std::pair<GiNaC::matrix, GiNaC::lst> solve(const GiNaC::ex& x0, const GiNaC::matrix& Y0, unsigned order);
+    std::pair<GiNaC::matrix, GiNaC::lst> solve(const GiNaC::ex& x0, const GiNaC::matrix& Y0, unsigned order, bool opt = true);
     
     GiNaC::symbol eps;
 private:

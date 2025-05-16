@@ -1,5 +1,6 @@
 #include "symdiffeq.h"
 #include "symsolver.h"
+#include "ratsolver.h"
 #include "jordan.h"
 
 
@@ -222,17 +223,24 @@ void symdiffeq::regular_reduction(const GiNaC::ex& x0) {
 }
 
 
-std::pair<GiNaC::matrix, GiNaC::lst> symdiffeq::solve(const GiNaC::ex& x0, unsigned order) {
+std::pair<GiNaC::matrix, GiNaC::lst> symdiffeq::solve(const GiNaC::ex& x0, unsigned order, bool opt) {
     clear_all_reduction();
     moser_reduction(x0);
     
     GiNaC::symbol t("t");
     GiNaC::matrix coeff_ = subs(coeff, x == x0 + t);
     if (is_analytic(x0)) {
-        symsolver_analytic solver(coeff_, t, order);
-        auto out = subs(NORMAL(subs(transform, x == x0 + t).mul(solver.solution())), t == x - x0);
-        auto radius_eqs = GiNaC::ex_to<GiNaC::lst>(((GiNaC::ex)(solver.radius_eqs())).subs(t == x));
-        return {out, radius_eqs};
+        if (!opt) {
+            symsolver_analytic solver(coeff_, t, order);
+            auto out = subs(NORMAL(subs(transform, x == x0 + t).mul(solver.solution())), t == x - x0);
+            auto radius_eqs = GiNaC::ex_to<GiNaC::lst>(((GiNaC::ex)(solver.radius_eqs())).subs(t == x));
+            return {out, radius_eqs};
+        } else {
+            ratsolver_analytic solver(coeff_, t, order);
+            auto out = subs(NORMAL(subs(transform, x == x0 + t).mul(solver.solution())), t == x - x0);
+            auto radius_eq = solver.radius_eq().subs(t == x, GiNaC::subs_options::algebraic);
+            return {out, {radius_eq}};
+        }
     }
 
     if (!(bool)(get_moser_struct(x0).moser_rank() == 1))
@@ -256,23 +264,37 @@ std::pair<GiNaC::matrix, GiNaC::lst> symdiffeq::solve(const GiNaC::ex& x0, unsig
         }
     }
     
-    symsolver_regular solver(A_ana, t, order, reg_struct);
-    auto out = subs(NORMAL(subs(transform, x == x0 + t).mul(solver.solution())), t == x - x0);
-    auto radius_eqs = GiNaC::ex_to<GiNaC::lst>(((GiNaC::ex)(solver.radius_eqs())).subs(t == x));
-    return {out, radius_eqs};
+    if (!opt) {
+        symsolver_regular solver(A_ana, t, order, reg_struct);
+        auto out = subs(NORMAL(subs(transform, x == x0 + t).mul(solver.solution())), t == x - x0);
+        auto radius_eqs = GiNaC::ex_to<GiNaC::lst>(((GiNaC::ex)(solver.radius_eqs())).subs(t == x));
+        return {out, radius_eqs};
+    } else {
+        ratsolver_regular solver(A_ana, t, order, reg_struct);
+        auto out = subs(NORMAL(subs(transform, x == x0 + t).mul(solver.solution())), t == x - x0);
+        auto radius_eq = solver.radius_eq().subs(t == x);
+        return {out, {radius_eq}};
+    }
 }
 
 
-std::pair<GiNaC::matrix, GiNaC::lst> symdiffeq::solve(const GiNaC::ex& x0, const GiNaC::matrix& Y0, unsigned order) {
+std::pair<GiNaC::matrix, GiNaC::lst> symdiffeq::solve(const GiNaC::ex& x0, const GiNaC::matrix& Y0, unsigned order, bool opt) {
     clear_all_reduction();
     moser_reduction(x0);
     
     if (is_analytic(x0)) {
         GiNaC::symbol t("t");
-        symsolver_analytic solver(subs(coeff, x == x0 + t), t, Y0, order);
-        auto out = subs(NORMAL(subs(transform, x == x0 + t).mul(solver.solution())), t == x - x0);
-        auto radius_eqs = GiNaC::ex_to<GiNaC::lst>(((GiNaC::ex)(solver.radius_eqs())).subs(t == x));
-        return {out, radius_eqs};
+        if (!opt) {
+            symsolver_analytic solver(subs(coeff, x == x0 + t), t, Y0, order);
+            auto out = subs(NORMAL(subs(transform, x == x0 + t).mul(solver.solution())), t == x - x0);
+            auto radius_eqs = GiNaC::ex_to<GiNaC::lst>(((GiNaC::ex)(solver.radius_eqs())).subs(t == x));
+            return {out, radius_eqs};
+        } else {
+            ratsolver_analytic solver(subs(coeff, x == x0 + t), t, Y0, order);
+            auto out = subs(NORMAL(subs(transform, x == x0 + t).mul(solver.solution())), t == x - x0);
+            auto radius_eq = solver.radius_eq().subs(t == x);
+            return {out, {radius_eq}};
+        }
     }
 
     throw std::runtime_error("not implemented: x0 is a singularity");
