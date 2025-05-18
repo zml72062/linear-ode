@@ -91,7 +91,7 @@ public:
      * (a.k.a. a singularity)
      */
     std::pair<GiNaC::matrix, GiNaC::ex> solve(const GiNaC::ex& x0, const GiNaC::matrix& Y0, unsigned order, unsigned digits);
-private:
+protected:
     // only for regular singularity
     regular_t     reg_struct;
 };

@@ -107,7 +107,7 @@ public:
     std::pair<GiNaC::matrix, GiNaC::lst> solve(const GiNaC::ex& x0, const GiNaC::matrix& Y0, unsigned order, bool opt = true);
     
     GiNaC::symbol eps;
-private:
+protected:
     // only for regular singularity
     sym_regular_t reg_struct;
 };
