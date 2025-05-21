@@ -79,11 +79,13 @@ GiNaC::matrix symsolver_analytic::solution() {
     int N = sol[0].rows(), C = sol[0].cols();
     int order = coeff.size() - 1;
     for (int k = 0; k < order; k++) {
+        std::cerr << "DiffEqSolver: solving order " << k << "\r";
         sol[k + 1] = GiNaC::matrix(N, C);
         for (int j = 0; j <= k; j++)
             sol[k + 1] = NORMAL(sol[k + 1].add(NORMAL(coeff[k - j].mul(sol[j]))));
         sol[k + 1] = NORMAL(sol[k + 1].mul_scalar(GiNaC::ex(1) / (k + 1)));
     }
+    std::cerr << "\nDiffEqSolver: solving done\n";
 
     GiNaC::matrix M(N, C);
     for (int i = 0; i < N; i++) {
@@ -145,6 +147,7 @@ void symsolver_regular::fill_in_solution(int psol, int puppersol) {
     GiNaC::ex diag = prstruct->J(psol, psol);
 
     for (int i = 1; i <= order; i++) {
+        std::cerr << "DiffEqSolver: solving solution " << psol << " for order " << i << "\r";
         diag = NORMAL(diag + 1);
 
         GiNaC::matrix temp(N, 1), tempY(N, 1);
@@ -164,6 +167,7 @@ void symsolver_regular::fill_in_solution(int psol, int puppersol) {
         for (int j = 0; j < N; j++)
             solutions[i](j, psol) = temp(j, 0);
     }
+    std::cerr << "\nDiffEqSolver: solving solution " << psol << " done\n";
 }
 
 

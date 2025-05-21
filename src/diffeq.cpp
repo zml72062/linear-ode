@@ -112,6 +112,9 @@ static int ca_mat_jordan_blocks_with_known_eigenvalues(ca_vec_t lambda, slong * 
 }
 
 
+#define NORMAL(m) GiNaC::ex_to<GiNaC::matrix>(((GiNaC::ex)(m)).normal())
+
+
 diffeq::diffeq(const GiNaC::matrix& _coeff, const GiNaC::symbol& _var) {
     initialize(subs(_coeff, _var == x));
 }
@@ -308,6 +311,8 @@ int diffeq::regular_reduction_one_step(const GiNaC::ex& x0, unsigned digits) {
     for (int i = 0; i < sz; i++)
         Px(i, i) = (x - x0);
     update(Px);
+    coeff = NORMAL(coeff);
+    transform = NORMAL(transform);
 
     // step 5: update J
     flint::ca_matrix Q_inv(reg_struct.ctx, N, N), tempJQ(reg_struct.ctx, N, N);
@@ -355,7 +360,12 @@ int diffeq::regular_reduction_one_step(const GiNaC::ex& x0, unsigned digits) {
 
 
 void diffeq::regular_reduction(const GiNaC::ex& x0, unsigned digits) {
-    while (regular_reduction_one_step(x0, digits));
+    std::cerr << "DiffEqSolver: start regular reduction\n";
+    int reduction_step = 1;
+    do {
+        std::cerr << "DiffEqSolver: perform regular reduction for " << reduction_step++ << " step\r";
+    } while (regular_reduction_one_step(x0, digits));
+    std::cerr << "\nDiffEqSolver: finish regular reduction\n";
 }
 
 

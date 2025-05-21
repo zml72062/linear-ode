@@ -126,6 +126,8 @@ void base_diffeq::moser_reduction_one_step(const GiNaC::ex& x0) {
 
     auto new_transform = NORMAL(permutation.mul(lincomb));
     update(new_transform);
+    coeff = NORMAL(coeff);
+    transform = NORMAL(transform);
 
     // step 2: decide Moser reducibility
     moser_info = get_moser_struct(x0);
@@ -156,6 +158,8 @@ void base_diffeq::moser_reduction_one_step(const GiNaC::ex& x0) {
         for (int i = 0; i < r; i++)
             T(i, i) = (x - x0);
         update(T);
+        coeff = NORMAL(coeff);
+        transform = NORMAL(transform);
         return;
     }
 
@@ -164,13 +168,13 @@ void base_diffeq::moser_reduction_one_step(const GiNaC::ex& x0) {
     for (int i = r; i < N(); i++)
         moser_discriminant(i, i) -= lambda; 
 
-    auto low_submatrix = SUBMATRIX(moser_discriminant, r, N() - r, 0, N());
-    // the rank of low_submatrix must be < N-r
-    std::vector<int> is_indep_row(N() - r, 0);
-    GiNaC::matrix indep_rows(0, N());
-    int h = N() - r - low_submatrix.rank(), n_indep_rows = 0, j = 0;
-    while (n_indep_rows != N() - r - h) {
-        auto next_row = SUBMATRIX(low_submatrix, j++, 1, 0, N());
+    std::vector<int> is_indep_row(N(), 0);
+    for (int i = 0; i < r; i++)
+        is_indep_row[i] = 1;
+    GiNaC::matrix indep_rows = SUBMATRIX(moser_discriminant, 0, r, 0, N());
+    int h = N() - moser_discriminant.rank(), n_indep_rows = r, j = r;
+    while (n_indep_rows != N() - h) {
+        auto next_row = SUBMATRIX(moser_discriminant, j++, 1, 0, N());
         auto new_indep_rows = append_row(indep_rows, next_row);
         if ((int)new_indep_rows.rank() > n_indep_rows) {
             indep_rows = new_indep_rows;
@@ -179,21 +183,19 @@ void base_diffeq::moser_reduction_one_step(const GiNaC::ex& x0) {
         }
     }
     GiNaC::matrix inv_permutation(N(), N());
-    for (int i = 0; i < r; i++)
-        inv_permutation(i, i) = 1;
-    int n1 = 0, n2 = N() - r - h;
-    for (int i = 0; i < N() - r; i++) {
+    int n1 = 0, n2 = N() - h;
+    for (int i = 0; i < N(); i++) {
         if (is_indep_row[i])
-            inv_permutation(r + (n1++), r + i) = 1;
+            inv_permutation(n1++, i) = 1;
         else
-            inv_permutation(r + (n2++), r + i) = 1;
+            inv_permutation(n2++, i) = 1;
     }
 
     auto newD = NORMAL(inv_permutation.mul(moser_discriminant));
-    auto newD_coeff = SUBMATRIX(newD, r, N() - r - h, 0, N()).transpose();
+    auto newD_coeff = SUBMATRIX(newD, 0, N() - h, 0, N()).transpose();
     auto newD_bias  = SUBMATRIX(newD, N() - h, h, 0, N()).transpose();
-    GiNaC::matrix varsD(N() - r - h, h);
-    for (int i = 0; i < N() - r - h; i++)
+    GiNaC::matrix varsD(N() - h, h);
+    for (int i = 0; i < N() - h; i++)
         for (int j = 0; j < h; j++)
             varsD(i, j) = GiNaC::symbol("tempD_" + std::to_string(i) + "_" + std::to_string(j)); 
     auto combiniD = NORMAL(newD_coeff.solve(varsD, newD_bias));
@@ -201,8 +203,8 @@ void base_diffeq::moser_reduction_one_step(const GiNaC::ex& x0) {
     for (int i = 0; i < N(); i++)
         lincombD(i, i) = 1;
     for (int i = N() - h; i < N(); i++)
-        for (int j = 0; j < N() - r - h; j++)
-            lincombD(i, r + j) = -combiniD(j, i - (N() - h));
+        for (int j = 0; j < N() - h; j++)
+            lincombD(i, j) = -combiniD(j, i - (N() - h));
     update(lincombD.mul(inv_permutation).inverse());
 
     GiNaC::matrix T(N(), N());
@@ -212,13 +214,18 @@ void base_diffeq::moser_reduction_one_step(const GiNaC::ex& x0) {
     for (int i = N() - h; i < N(); i++)
         T(i, i) = (x - x0);
     update(T);
+    coeff = NORMAL(coeff);
+    transform = NORMAL(transform);
 }
 
 
 void base_diffeq::moser_reduction(const GiNaC::ex& x0) {
+    std::cerr << "DiffEqSolver: start Moser reduction\n";
     GiNaC::ex moser_rank = get_moser_struct(x0).moser_rank();
+    int reduction_step = 1;
     while (true) {
         moser_reduction_one_step(x0);
+        std::cerr << "DiffEqSolver: perform Moser reduction for " << reduction_step++ << " step\r";
         GiNaC::ex new_moser_rank = get_moser_struct(x0).moser_rank();
         if (new_moser_rank < moser_rank)
             moser_rank = new_moser_rank;
@@ -227,6 +234,7 @@ void base_diffeq::moser_reduction(const GiNaC::ex& x0) {
         else
             throw std::logic_error("Moser reduction runs into an impossible branch!");
     }
+    std::cerr << "\nDiffEqSolver: finish Moser reduction\n";
 }
 
 
@@ -247,8 +255,8 @@ bool base_diffeq::is_regular(const GiNaC::ex& x0) {
 
 
 void base_diffeq::update(const GiNaC::matrix& new_transform) {
-    transform = NORMAL(transform.mul(new_transform));
-    coeff = NORMAL(new_transform.inverse().mul(coeff.mul(new_transform).sub(GiNaC::ex_to<GiNaC::matrix>(new_transform.diff(x)))));
+    transform = transform.mul(new_transform);
+    coeff = new_transform.inverse().mul(coeff.mul(new_transform).sub(GiNaC::ex_to<GiNaC::matrix>(new_transform.diff(x))));
 }
 
 

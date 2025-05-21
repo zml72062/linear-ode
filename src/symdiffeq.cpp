@@ -195,6 +195,8 @@ int symdiffeq::regular_reduction_one_step(const GiNaC::ex& x0) {
     for (int i = 0; i < sz; i++)
         Px(i, i) = (x - x0);
     update(Px);
+    coeff = NORMAL(coeff);
+    transform = NORMAL(transform);
 
     // step 5: update J
     reg_struct.J = NORMAL(NORMAL(Q.inverse()).mul(NORMAL(reg_struct.J.mul(Q))));
@@ -219,7 +221,12 @@ int symdiffeq::regular_reduction_one_step(const GiNaC::ex& x0) {
 
 
 void symdiffeq::regular_reduction(const GiNaC::ex& x0) {
-    while (regular_reduction_one_step(x0));
+    std::cerr << "DiffEqSolver: start regular reduction\n";
+    int reduction_step = 1;
+    do {
+        std::cerr << "DiffEqSolver: perform regular reduction for " << reduction_step++ << " step\r";
+    } while (regular_reduction_one_step(x0));
+    std::cerr << "\nDiffEqSolver: finish regular reduction\n";
 }
 
 

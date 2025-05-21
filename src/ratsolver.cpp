@@ -112,6 +112,7 @@ GiNaC::matrix ratsolver_analytic::solution() {
     int L_D = denom.size() - 1, L_N = numer.size() - 1;
 
     for (int k = 0; k < order; k++) {
+        std::cerr << "DiffEqSolver: solving order " << k << "\r";
         auto n_sum = GiNaC::matrix(N, C);
         int n_terms = std::min(k, L_N);
         for (int j = 0; j <= n_terms; j++)
@@ -124,6 +125,7 @@ GiNaC::matrix ratsolver_analytic::solution() {
         
         sol[k + 1] = NORMAL(n_sum.sub(d_sum).mul_scalar(GiNaC::ex(1) / denom[0] / (k + 1)));
     }
+    std::cerr << "\nDiffEqSolver: solving done\n";
 
     GiNaC::matrix M(N, C);
     for (int i = 0; i < N; i++) {
@@ -200,6 +202,7 @@ void ratsolver_regular::fill_in_solution(int psol, int puppersol) {
     GiNaC::ex diag = prstruct->J(psol, psol);
 
     for (int i = 1; i <= order; i++) {
+        std::cerr << "DiffEqSolver: solving solution " << psol << " for order " << i << "\r";
         diag = NORMAL(diag + 1);
 
         GiNaC::matrix part0(N, 1), part1(N, 1), part2(N, 1);
@@ -247,6 +250,7 @@ void ratsolver_regular::fill_in_solution(int psol, int puppersol) {
         for (int j = 0; j < N; j++)
             solutions[i](j, psol) = result(j, 0);
     }
+    std::cerr << "\nDiffEqSolver: solving solution " << psol << " done\n";
 }
 
 

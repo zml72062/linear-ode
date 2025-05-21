@@ -87,6 +87,7 @@ GiNaC::matrix solver_analytic::solution(unsigned dig) {
     int N = sol[0].ptr()->r, C = sol[0].ptr()->c;
     int order = coeff.size() - 1;
     for (int k = 0; k < order; k++) {
+        std::cerr << "DiffEqSolver: solving order " << k << "\r";
         sol[k + 1].call(ca_mat_zero);
         flint::ca_matrix temp(ctx, N, C);
         for (int j = 0; j <= k; j++) {
@@ -95,6 +96,7 @@ GiNaC::matrix solver_analytic::solution(unsigned dig) {
         }
         sol[k + 1].call(ca_mat_div_si, sol[k + 1].ptr(), k + 1);
     }
+    std::cerr << "\nDiffEqSolver: solving done\n";
 
     GiNaC::matrix M(N, C);
     for (int i = 0; i < N; i++) {
@@ -153,6 +155,7 @@ void solver_regular::fill_in_solution(int psol, int puppersol) {
     diag.call(ca_set, prstruct->J(psol, psol));
 
     for (int i = 1; i <= order; i++) {
+        std::cerr << "DiffEqSolver: solving solution " << psol << " for order " << i << "\r";
         diag.call(ca_add_si, diag.ptr(), 1);
 
         flint::ca_matrix temp(prstruct->ctx, N, 1), tempY(prstruct->ctx, N, 1), prod(prstruct->ctx, N, 1);
@@ -176,6 +179,7 @@ void solver_regular::fill_in_solution(int psol, int puppersol) {
         for (int j = 0; j < N; j++)
             ca_set(solutions[i](j, psol), temp(j, 0), prstruct->ctx.ctx);
     }
+    std::cerr << "\nDiffEqSolver: solving solution " << psol << " done\n";
 }
 
 
