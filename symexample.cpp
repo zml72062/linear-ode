@@ -15,8 +15,8 @@ int main() {
     std::cout << "convergence radius: " << res2.second << std::endl;
 
     // resonant test case
-    auto eq3 = symdiffeq::from_string("{{2*eps/(x*(x+2)),(1+eps)/x-x-2},{-1,(1+eps)/x}}");
-    auto res3 = eq3.solve(0, 10);
+    auto eq3 = symdiffeq::from_string("{{2*eps/(x^2-1),(1+eps)/(x-1)-x-1},{-1,(1+eps)/(x-1)}}");
+    auto res3 = eq3.solve(1, 10);
     std::cout << "solution matrix: " << res3.first << std::endl;
     std::cout << "convergence radius: " << res3.second << std::endl;
 
