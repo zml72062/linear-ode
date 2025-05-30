@@ -145,9 +145,21 @@ void base_diffeq::moser_reduction_one_step(const GiNaC::ex& x0) {
     for (int i = r; i < N(); i++)
         moser_discriminant(i, i) += lambda; 
 
-    if (!bool(moser_discriminant.determinant().expand().normal() == 0))
-        // not Moser reducible
-        return;
+    /**
+     * In principle we should test whether 
+     * 
+     *      moser_discriminant.determinant() == 0
+     * 
+     * for an arbitrary lambda, but this would be slow symbolically.
+     * 
+     * Instead, we check this for (N + 1) different lambda values,
+     * which suffices for an at-most-N-degree polynomial.
+     */
+    for (int i = 0; i < N() + 1; i++) {
+        if (!(bool)(subs(moser_discriminant, lambda == i).determinant().expand() == 0))
+            // not Moser reducible
+            return;
+    }
     
     // step 3: deal with the first case, where the first r rows of Moser 
     //         discriminant are not linearly independent
